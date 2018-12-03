@@ -1,5 +1,6 @@
 # 简书HTML解析成Markdown(Python)
 
+
 > 想着把我的简书blog同步到自己的blog，这个工具应运而生了。（/滑稽）
 
 做的时候大概想的2个方案：
@@ -7,9 +8,10 @@
 - 登录简书下载md
 - 解析简书html为md
 
-第一个方案，登录的时候有那个什么图片点击验证放弃，
-所以就才用第二个方案。自己的blog后端是用Python写的，语言也就python了。
-github搜索了一下，库还蛮多的，我选择了其中的[Tomd](https://github.com/gaojiuli/tomd)，当然里面的规则并不能完全解析简书的html,比如图片规则，所以我对里面做了一些修改，改的不多。
+第一个方案，登录的时候有那个什么图片点击验证放弃，所以就才用第二个方案。
+自己的blog后端是用Python写的，语言也就python了。
+github搜索了一下，库还蛮多的，我选择了其中的[Tomd](https://github.com/gaojiuli/tomd)，
+当然里面的规则并不能完全解析简书的html,比如图片规则，所以我对里面做了一些修改，改的不多。
 
 
 ```python
@@ -284,5 +286,43 @@ convert = _inst.convert
 然后上一个测试:
 
 ```python
+import re
 
+import requests
+from bs4 import BeautifulSoup
+
+import tomd
+
+
+def main():
+    headers = {
+        'referer': 'https://www.jianshu.com/p/c75f1ce0a6ae',
+        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.102 Safari/537.36'
+    }
+
+    url = 'https://www.jianshu.com/p/c75f1ce0a6ae'
+
+    res = requests.get(url=url, headers=headers)
+
+    # print(res.text)
+
+    soup = BeautifulSoup(res.text)
+
+    content = soup.select_one('div.show-content-free')
+    # print(content)
+
+    m = re.search('div\sclass="show-content-free">([\s\S]*)</div>', str(content))
+    if m:
+        html = m.group(1)
+        print(html)
+        tomd.Tomd(html=html, file='test.md').export()
+
+
+if __name__ == '__main__':
+    main()
 ```
+
+看看结果：
+
+![gif.gif](https://upload-images.jianshu.io/upload_images/2189945-10d2a64d396abd78.gif?imageMogr2/auto-orient/strip)
+
